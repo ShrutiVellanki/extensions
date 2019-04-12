@@ -8,6 +8,7 @@ import { PanelStateManager } from './panel-state-manager';
  */
 export declare class PanelManager {
     constructor(mapApi: any);
+    prepEnhancedTable(): void;
     panelStateManager: PanelStateManager;
     setLegendBlock(block: any): void;
     open(tableOptions: any, layer: any, tableBuilder: any): void;
