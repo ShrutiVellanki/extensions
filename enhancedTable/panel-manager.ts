@@ -156,15 +156,38 @@ export class PanelManager {
             this.tableOptions = tableOptions;
 
             // create tooltips on cell focus when appropriate
+            // create tooltips on cell focus when appropriate
             this.tableOptions.onCellFocused = (cell) => {
                 if (cell.rowIndex !== null) {
                     const focusedCell = <HTMLElement>$(`[row-index=${cell.rowIndex}]`).find(`[col-id=${cell.column.colId}]`)[0];
-                    const focusedCellText = <HTMLElement>focusedCell.children[0]
-                    if (focusedCellText.offsetWidth > focusedCell.offsetWidth && !$(focusedCellText).hasClass('rv-render-ellipsis')) {
+                    const focusedCellText = <HTMLElement>focusedCell.children[0];
+
+                    if ($('.rv-render-ellipsis')[0] !== undefined) {
+                        $($('.rv-render-ellipsis')[0]).removeClass('rv-render-ellipsis');
+                    }
+
+                    if (focusedCellText.offsetWidth > focusedCell.offsetWidth) {
                         // if the cell text isn't contained within the cell, create a tooltip which shows full text on cell focus
                         // only add tooltip if not already added to cell
+
+                        const adjustPosition = () => {
+                            const tooltip = $('.rv-render-tooltip')[0];
+                            const topMargin = $(focusedCell).offset().top - $(tooltip).offset().top;
+                            const topLeft = $(focusedCell).offset().left - $(tooltip).offset().left;
+                            const overlayBottom = $('.ag-overlay').position().top + $('.ag-overlay').height();
+                            tooltip.style.top = `${topMargin + 20}px`;
+                            tooltip.style.left = `${topLeft}px`;
+                            if (tooltip.offsetTop + $(tooltip).height() > overlayBottom - 20) {
+                                tooltip.style.bottom = '20px';
+                            }
+                        }
+
                         $(focusedCellText).addClass('rv-render-ellipsis');
-                        $(focusedCell).append(`<span class='rv-render-tooltip'>${focusedCellText.innerHTML}</span>`)
+                        this.tableOptions.overlayNoRowsTemplate = `<span class='rv-render-tooltip'>${focusedCellText.innerHTML}</span>`;
+                        this.tableOptions.api.showNoRowsOverlay();
+                        adjustPosition();
+                    } else {
+                        this.tableOptions.api.hideOverlay();
                     }
                 }
             }
@@ -625,7 +648,7 @@ export class PanelManager {
                                     // update all variables after finding an escaped special char, preserving all text except the backslash
                                     newVal = newVal + val.substr(lastIdx, escMatch.index - lastIdx) + escMatch[0].slice(-1);
                                     lastIdx = escMatch.index + 2;
-                                    remVal =  val.substr(escMatch.index + 2);
+                                    remVal = val.substr(escMatch.index + 2);
                                     escMatch = escRegex.exec(val);
                                 }
                                 newVal = newVal + remVal;

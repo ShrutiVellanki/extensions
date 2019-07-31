@@ -27,7 +27,17 @@ export class PanelStatusManager {
         }
 
         tableOptions.onBodyScroll = function (event) {
-            that.getScrollRange();
+            const scrollRange = that.getScrollRange();
+            const focusedCell = that.tableOptions.api.getFocusedCell();
+            const topRow = parseInt(scrollRange.split(' - ')[0]) - 1;
+            const bottomRow = parseInt(scrollRange.split(' - ')[1]) - 1;
+            const focusedRow = focusedCell.rowIndex;
+
+            if (topRow < focusedRow && bottomRow > focusedRow) {
+                that.tableOptions.api.setFocusedCell(focusedCell.rowIndex, focusedCell.column.colId);
+            } else {
+                that.tableOptions.api.hideOverlay();
+            }
         }
     }
 
@@ -37,7 +47,7 @@ export class PanelStatusManager {
         this.panelManager.recordCountScope.totalRecords = this.tableOptions.rowData.length;
 
         // rows are filtered
-        if(this.tableOptions.api && this.tableOptions.api.getDisplayedRowCount() < this.tableOptions.rowData.length) {
+        if (this.tableOptions.api && this.tableOptions.api.getDisplayedRowCount() < this.tableOptions.rowData.length) {
             this.panelManager.recordCountScope.filtered = true;
             this.panelManager.legendBlock.filter = true; // add filter flag if rows are filtered
         } else {
